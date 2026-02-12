@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>2026 Bordro Hesaplama</title>
 
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f172a">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 <style>
 body{margin:0;font-family:Arial;background:#0f172a;color:#e2e8f0}
 .container{max-width:1300px;margin:auto;padding:20px}
@@ -54,11 +59,8 @@ h3{margin-top:30px}
 
 let eskiSaat=0, ocakSaat=0, martSaat=0, eylulSaat=0;
 
-function tl(x){
-return x.toLocaleString('tr-TR',{minimumFractionDigits:2})+" TL";
-}
+function tl(x){return x.toLocaleString('tr-TR',{minimumFractionDigits:2})+" TL";}
 
-// 2026 Gelir Vergisi Dilimi
 function gelirVergiOran(k){
 if(k<=190000) return 0.15;
 if(k<=400000) return 0.20;
@@ -67,7 +69,6 @@ if(k<=5300000) return 0.35;
 return 0.40;
 }
 
-// OCAK
 function hesapOcak(){
 eskiSaat=parseFloat(document.getElementById("eskiSaat").value);
 if(!eskiSaat) return alert("Saat giriniz");
@@ -87,10 +88,8 @@ Aylık Net: ${tl(aylikNet)}<br>
 </div>`;
 }
 
-// MART
 function hesapMart(){
 if(!ocakSaat) return alert("Önce Ocak hesapla");
-
 let oran=parseFloat(document.getElementById("martOran").value)||0;
 martSaat=ocakSaat*(1+oran/100);
 
@@ -107,10 +106,8 @@ Aylık Net: ${tl(aylikNet)}<br>
 </div>`;
 }
 
-// EYLÜL
 function hesapEylul(){
 if(!martSaat) return alert("Önce Mart hesapla");
-
 let oran=parseFloat(document.getElementById("eylulOran").value)||0;
 eylulSaat=martSaat*(1+oran/100);
 
@@ -127,48 +124,28 @@ Aylık Net: ${tl(aylikNet)}<br>
 </div>`;
 }
 
-// YILLIK BORDRO
 function yillikTablo(){
-
 if(!ocakSaat) return alert("Önce Ocak hesapla");
 
 let aylar=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
-
-let saatler=[
-ocakSaat,ocakSaat,
-martSaat,martSaat,martSaat,martSaat,martSaat,martSaat,
-eylulSaat,eylulSaat,eylulSaat,eylulSaat
-];
+let saatler=[ocakSaat,ocakSaat,martSaat,martSaat,martSaat,martSaat,martSaat,martSaat,eylulSaat,eylulSaat,eylulSaat,eylulSaat];
 
 let kumulatif=0;
 let html="<h3>2026 Yıllık Bordro Tablosu</h3><table><tr>\
-<th>Ay</th>\
-<th>Net Saat</th>\
-<th>Aylık Net</th>\
-<th>%40 Avans</th>\
-<th>Zam Farkı</th>\
-<th>Brüt Karşılığı</th>\
-<th>SGK %14</th>\
-<th>İşsizlik %1</th>\
-<th>Gelir Vergisi</th>\
-<th>Damga %0,759</th>\
-<th>Net Maaş</th>\
-</tr>";
+<th>Ay</th><th>Net Saat</th><th>Aylık Net</th><th>%40 Avans</th><th>Zam Farkı</th>\
+<th>Brüt</th><th>SGK %14</th><th>İşsizlik %1</th><th>Gelir Vergisi</th><th>Damga</th><th>Net Maaş</th></tr>";
 
 for(let i=0;i<12;i++){
-
-let netSaat=saatler[i];
-if(!netSaat) continue;
-
+let netSaat=saatler[i]; if(!netSaat) continue;
 let aylikNet=netSaat*225;
 let avans=aylikNet*0.40;
 
 let zamFark=0;
-if(i==0||i==1) zamFark=(ocakSaat-eskiSaat)*225;
-if(i>=2&&i<=7) zamFark=(martSaat-ocakSaat)*225;
+if(i<=1) zamFark=(ocakSaat-eskiSaat)*225;
+if(i>=2 && i<=7) zamFark=(martSaat-ocakSaat)*225;
 if(i>=8) zamFark=(eylulSaat-martSaat)*225;
 
-let brut=netSaat*225*1.33; // brüt karşılığı approx
+let brut=netSaat*225*1.33;
 let sgk=brut*0.14;
 let iss=brut*0.01;
 let matrah=brut-sgk-iss;
@@ -176,7 +153,6 @@ let matrah=brut-sgk-iss;
 kumulatif+=matrah;
 let gv=matrah*gelirVergiOran(kumulatif);
 let damga=brut*0.00759;
-
 let net=brut-sgk-iss-gv-damga;
 
 html+=`<tr>
@@ -196,21 +172,10 @@ html+=`<tr>
 
 html+="</table>";
 document.getElementById("tabloAlani").innerHTML=html;
+}
 
-document.getElementById("sunumAlani").innerHTML=
-`<div class='summary'>
-<h3>Bilgilendirme</h3>
-SGK İşçi: %14<br>
-İşsizlik: %1<br>
-Damga Vergisi: %0,759<br><br>
-<b>2026 Gelir Vergisi Dilimleri:</b><br>
-0 – 190.000 → %15<br>
-190.000 – 400.000 → %20<br>
-400.000 – 1.500.000 → %27<br>
-1.500.000 – 5.300.000 → %35<br>
-5.300.000+ → %40<br><br>
-Gelir vergisi kümülatif matrah sistemine göre hesaplanır.
-</div>`;
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
 
 </script>
